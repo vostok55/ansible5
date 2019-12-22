@@ -1,0 +1,39 @@
+---
+- name: install web
+  hosts: web
+  become: yes
+  
+  tasks:
+
+  - name: Ensure maven package is present
+    apt:
+      name: maven
+      state: present
+
+  - name: Ensure maven servise is started
+    service:
+      name: maven
+      state: started
+
+  - name: Clone repo
+    git:
+      repo: https://github.com/venkaDaria/puzzle15.git
+      dest: /src/puzzle15
+    
+  - name: Build sample app
+    shell: mvn package chdir=/src/puzzle15/
+ 
+  - name: Ensure Puzzle15-1.0-SNAPSHOT present in directory
+    copy:
+      src: /src/puzzle15/target/Puzzle15-1.0-SNAPSHOT.war
+      dest: /usr/local/tomcat/webapps/
+
+  - name: Ensure tomcat package is present
+    apt:
+      name: tomcat
+      state: present
+
+  - name: Ensure tomcat servise is started
+    service:
+      name: tomcat
+      state: started
