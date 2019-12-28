@@ -1,6 +1,6 @@
 ---
 - name: install web
-  hosts: ub2
+  hosts: web
   become: yes
   
   tasks: 
