@@ -1,39 +1,38 @@
 ---
 - name: install web
-  hosts: web
+  hosts: ub2
   become: yes
   
-  tasks:
+  tasks: 
+  - name: Install Java
+    apt: name={{item}} state=latest
+    with_items:
+          - openjdk-8-jdk
 
-  - name: Ensure maven package is present
-    apt:
-      name: maven
-      state: present
+  - name: Untar Maven 
+    shell: chdir=/tmp creates=/opt/apache-maven-3.6.3 tar -zxf apache-maven-3.6.3-bin.tar.gz -C /opt
 
-  - name: Ensure maven servise is started
-    service:
-      name: maven
-      state: started
+  - name: Update path for maven use
+    shell: export PATH=/opt/apache-maven-3.6.3/bin:$PATH
 
   - name: Clone repo
     git:
       repo: https://github.com/venkaDaria/puzzle15.git
-      dest: /src/puzzle15
+      dest: /srv/puzzle15
     
   - name: Build sample app
-    shell: mvn package chdir=/src/puzzle15/
+    shell: mvn package chdir=/srv/puzzle15/
  
-  - name: Ensure Puzzle15-1.0-SNAPSHOT present in directory
-    copy:
-      src: /src/puzzle15/target/Puzzle15-1.0-SNAPSHOT.war
-      dest: /usr/local/tomcat/webapps/
-
   - name: Ensure tomcat package is present
     apt:
-      name: tomcat
+      name: tomcat8
       state: present
 
   - name: Ensure tomcat servise is started
     service:
-      name: tomcat
+      name: tomcat8
       state: started
+
+  - name: Ensure Puzzle15-1.0-SNAPSHOT present in directory
+    shell: cp /srv/puzzle15/target/Puzzle15-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/Puzzle15-1.0-SNAPSHOT.war
+
